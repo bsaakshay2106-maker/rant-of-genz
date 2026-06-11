@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Rant of GenZs</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { background: var(--bg); }
+    .admin-layout { display: flex; min-height: 100vh; }
+    .admin-sidebar {
+      width: 220px; background: var(--surface); border-right: 1px solid var(--border);
+      padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 4px;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+    }
+    .sidebar-logo { font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; margin-bottom: 1.5rem; padding: 0 0.5rem; }
+    .sidebar-logo span { background: linear-gradient(90deg, var(--purple-bright), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nav-item {
+      padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer;
+      font-size: 0.875rem; color: var(--text-muted); transition: var(--transition);
+      display: flex; align-items: center; gap: 8px; border: none; background: none;
+      width: 100%; text-align: left; font-family: var(--font-body);
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: rgba(139,92,246,0.15); color: var(--purple-bright); border: 1px solid rgba(139,92,246,0.2); }
+    .admin-main { flex: 1; padding: 2rem; overflow-x: hidden; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+    .admin-title { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.25rem; text-align: center;
+    }
+    .stat-number { font-family: var(--font-display); font-size: 2rem; font-weight: 800; background: linear-gradient(90deg, var(--purple-bright), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .stat-label { font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .admin-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+    .admin-table th { background: var(--surface2); padding: 12px 16px; text-align: left; font-size: 0.78rem; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+    .admin-table td { padding: 12px 16px; font-size: 0.875rem; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover td { background: var(--surface2); }
+    .badge { display: inline-block; border-radius: 100px; padding: 2px 10px; font-size: 0.72rem; font-family: var(--font-mono); }
+    .badge-green { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: var(--green); }
+    .badge-red { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: var(--red); }
+    .badge-yellow { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: var(--yellow); }
+    .btn-sm { padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; cursor: pointer; font-family: var(--font-body); transition: var(--transition); border: 1px solid transparent; }
+    .btn-block { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--red); }
+    .btn-unblock { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: var(--green); }
+    .btn-delete-chat { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--red); }
+    .btn-sm:hover { filter: brightness(1.2); }
+    .search-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius-sm); padding: 8px 14px; font-family: var(--font-body); font-size: 0.9rem; outline: none; width: 240px; }
+    .search-input:focus { border-color: var(--purple); }
+    .section { display: none; }
+    .section.active { display: block; }
+    .truncate { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); font-size: 0.8rem; }
+    .admin-back { color: var(--purple-bright); text-decoration: none; font-size: 0.875rem; display: flex; align-items: center; gap: 4px; }
+    .admin-back:hover { color: var(--pink); }
+    #access-denied { text-align: center; padding: 4rem; }
+  </style>
+</head>
+<body>
+<div id="access-denied" style="display:none">
+  <div style="font-size:3rem">🚫</div>
+  <h2 style="font-family:var(--font-display);margin:1rem 0">Admins only!</h2>
+  <a href="/" style="color:var(--purple-bright)">← Back to rants</a>
+</div>
+
+<div class="admin-layout" id="admin-layout" style="display:none">
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">🛡️ <span>Admin</span></div>
+    <button class="nav-item active" onclick="showSection('stats', this)">📊 Dashboard</button>
+    <button class="nav-item" onclick="showSection('users', this)">👥 Users</button>
+    <button class="nav-item" onclick="showSection('chats', this)">💬 Chats</button>
+    <div style="margin-top:auto">
+      <a href="/" style="display:block;padding:10px 12px;color:var(--text-muted);font-size:0.875rem;text-decoration:none">← Back to app</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <!-- Stats -->
+    <section class="section active" id="section-stats">
+      <div class="admin-header">
+        <div class="admin-title">Dashboard 📊</div>
+      </div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+    <!-- Users -->
+    <section class="section" id="section-users">
+      <div class="admin-header">
+        <div class="admin-title">Users 👥</div>
+        <input type="text" class="search-input" id="user-search" placeholder="Search username..." oninput="debounceUserSearch()">
+      </div>
+      <div id="users-table-container"></div>
+      <div class="pagination" id="users-pagination"></div>
+    </section>
+
+    <!-- Chats -->
+    <section class="section" id="section-chats">
+      <div class="admin-header">
+        <div class="admin-title">All Chats 💬</div>
+      </div>
+      <div id="chats-table-container"></div>
+      <div class="pagination" id="chats-pagination"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+let currentUserPage = 1;
+let currentChatPage = 1;
+let userSearchTimeout;
+
+async function adminApi(path, opts = {}) {
+  const res = await fetch('/api/admin' + path, {
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    ...opts,
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Error');
+  return data;
+}
+
+function showSection(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  btn.classList.add('active');
+
+  if (name === 'stats') loadStats();
+  if (name === 'users') loadUsers(1);
+  if (name === 'chats') loadAdminChats(1);
+}
+
+async function loadStats() {
+  try {
+    const s = await adminApi('/stats');
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card"><div class="stat-number">${s.totalUsers}</div><div class="stat-label">Total Users</div></div>
+      <div class="stat-card"><div class="stat-number">${s.blockedUsers}</div><div class="stat-label">Blocked</div></div>
+      <div class="stat-card"><div class="stat-number">${s.totalChats}</div><div class="stat-label">Rants</div></div>
+      <div class="stat-card"><div class="stat-number">${s.totalComments}</div><div class="stat-label">Comments</div></div>
+      <div class="stat-card"><div class="stat-number">${s.totalReactions}</div><div class="stat-label">Reactions</div></div>
+      <div class="stat-card"><div class="stat-number">${s.todayChats}</div><div class="stat-label">Today's Rants</div></div>
+    `;
+  } catch(e) { document.getElementById('stats-grid').innerHTML = `<p style="color:var(--red)">${e.message}</p>`; }
+}
+
+async function loadUsers(page) {
+  currentUserPage = page;
+  const search = document.getElementById('user-search').value;
+  const container = document.getElementById('users-table-container');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div> Loading...</div>';
+  try {
+    const data = await adminApi(`/users?page=${page}&search=${encodeURIComponent(search)}`);
+    container.innerHTML = `
+      <table class="admin-table">
+        <thead><tr>
+          <th>User</th><th>Chats</th><th>Comments</th><th>Joined</th><th>Status</th><th>Action</th>
+        </tr></thead>
+        <tbody>
+          ${data.users.map(u => `
+            <tr>
+              <td>
+                <div style="font-weight:600">${escHtml(u.display_name)}</div>
+                <div style="color:var(--text-dim);font-size:0.75rem;font-family:var(--font-mono)">@${escHtml(u.username)}</div>
+              </td>
+              <td>${u.chat_count}</td>
+              <td>${u.comment_count}</td>
+              <td style="color:var(--text-muted);font-family:var(--font-mono);font-size:0.75rem">${new Date(u.created_at*1000).toLocaleDateString('en-IN')}</td>
+              <td><span class="badge ${u.is_blocked ? 'badge-red' : 'badge-green'}">${u.is_blocked ? 'Blocked' : 'Active'}</span></td>
+              <td>
+                <button class="btn-sm ${u.is_blocked ? 'btn-unblock' : 'btn-block'}" onclick="toggleBlock(${u.id}, ${u.is_blocked ? 0 : 1}, this)">
+                  ${u.is_blocked ? 'Unblock' : 'Block'}
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    renderAdminPagination('users', page, data.pages);
+  } catch(e) { container.innerHTML = `<p style="color:var(--red)">${e.message}</p>`; }
+}
+
+async function toggleBlock(userId, shouldBlock, btn) {
+  try {
+    await adminApi(`/users/${userId}/block`, { method: 'PATCH', body: { blocked: shouldBlock === 1 } });
+    loadUsers(currentUserPage);
+  } catch(e) { alert(e.message); }
+}
+
+async function loadAdminChats(page) {
+  currentChatPage = page;
+  const container = document.getElementById('chats-table-container');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  try {
+    const data = await adminApi(`/chats?page=${page}`);
+    container.innerHTML = `
+      <table class="admin-table">
+        <thead><tr>
+          <th>Author</th><th>Category</th><th>Content</th><th>Comments</th><th>Status</th><th>Action</th>
+        </tr></thead>
+        <tbody>
+          ${data.chats.map(c => `
+            <tr>
+              <td style="white-space:nowrap">
+                <div style="font-weight:600">${escHtml(c.author)}</div>
+                <div style="color:var(--text-dim);font-size:0.72rem;font-family:var(--font-mono)">@${escHtml(c.username)}</div>
+              </td>
+              <td><span class="badge badge-yellow">${escHtml(c.category)}</span></td>
+              <td><div class="truncate">${escHtml(c.content)}</div></td>
+              <td>${c.comment_count}</td>
+              <td><span class="badge ${c.is_deleted ? 'badge-red' : 'badge-green'}">${c.is_deleted ? 'Deleted' : 'Active'}</span></td>
+              <td>
+                ${!c.is_deleted ? `<button class="btn-sm btn-delete-chat" onclick="deleteChat(${c.id}, this)">Delete</button>` : '—'}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    renderAdminPagination('chats', page, data.pages);
+  } catch(e) { container.innerHTML = `<p style="color:var(--red)">${e.message}</p>`; }
+}
+
+async function deleteChat(chatId, btn) {
+  if (!confirm('Delete this rant? This cannot be undone.')) return;
+  try {
+    await adminApi(`/chats/${chatId}`, { method: 'DELETE' });
+    loadAdminChats(currentChatPage);
+  } catch(e) { alert(e.message); }
+}
+
+function renderAdminPagination(type, page, pages) {
+  const el = document.getElementById(`${type}-pagination`);
+  if (!el || pages <= 1) { if(el) el.innerHTML = ''; return; }
+  const loadFn = type === 'users' ? 'loadUsers' : 'loadAdminChats';
+  let html = '';
+  if (page > 1) html += `<button class="page-btn" onclick="${loadFn}(${page-1})">← Prev</button>`;
+  for (let i = Math.max(1, page-2); i <= Math.min(pages, page+2); i++) {
+    html += `<button class="page-btn ${i===page?'active':''}" onclick="${loadFn}(${i})">${i}</button>`;
+  }
+  if (page < pages) html += `<button class="page-btn" onclick="${loadFn}(${page+1})">Next →</button>`;
+  el.innerHTML = html;
+}
+
+function debounceUserSearch() {
+  clearTimeout(userSearchTimeout);
+  userSearchTimeout = setTimeout(() => loadUsers(1), 400);
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Init
+(async () => {
+  try {
+    const res = await fetch('/api/admin/check', { credentials: 'include' });
+    const data = await res.json();
+    if (!data.isAdmin) {
+      document.getElementById('access-denied').style.display = 'block';
+    } else {
+      document.getElementById('admin-layout').style.display = 'flex';
+      loadStats();
+    }
+  } catch(e) {
+    document.getElementById('access-denied').style.display = 'block';
+  }
+})();
+</script>
+</body>
+</html>

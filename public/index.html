@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rant of GenZs 🔥</title>
+  <meta name="description" content="The unfiltered rant platform for Gen-Z. Say it loud. No filters. Just vibes.">
+  <meta property="og:title" content="Rant of GenZs 🔥">
+  <meta property="og:description" content="Saas-Bahu drama? Boss trauma? Neta nonsense? Rant it out.">
+  <meta name="theme-color" content="#8b5cf6">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- ══ LANDING PAGE ══ -->
+<div id="landing-page" class="page active">
+  <div class="landing-bg">
+    <div class="landing-bg-gradient"></div>
+    <div class="scene-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="scene-tags">
+      <span class="scene-tag">👰 saas ne phir sunaya</span>
+      <span class="scene-tag">💼 manager is on one today</span>
+      <span class="scene-tag">🔥 neta ji zzz</span>
+      <span class="scene-tag">😤 office ka drama</span>
+      <span class="scene-tag">💀 ghar mein curfew wtf</span>
+      <span class="scene-tag">👀 bahu life is hard</span>
+    </div>
+  </div>
+
+  <div class="landing-content">
+    <div class="landing-logo">
+      <div class="dot"></div>
+      Live &amp; Unfiltered
+    </div>
+
+    <h1 class="landing-title">Rant of<br>GenZs</h1>
+    <p class="landing-subtitle">
+      <strong>Saas-bahu drama. Boss nightmares. Neta nonsense.</strong><br>
+      Type your name. Hit rant. Let it allll out.
+    </p>
+
+    <div class="landing-form">
+      <div class="input-wrapper">
+        <input
+          type="text"
+          id="name-input"
+          class="landing-input"
+          placeholder="What do people call you? 👀"
+          maxlength="30"
+          autocomplete="off"
+          spellcheck="false"
+        >
+      </div>
+      <button class="btn-rant" id="login-btn" onclick="doLogin()">
+        <span>Let's Rant Up 🔥</span>
+      </button>
+      <p class="landing-note">No password. No signup drama. Just type your name and go 🫡</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP SHELL ══ -->
+<div id="app-page" class="page">
+
+  <!-- Sticky header -->
+  <header class="app-header">
+    <div class="header-brand" onclick="showCategories()">RantOfGenZs 🔥</div>
+    <div class="header-user">
+      <span class="user-badge" id="header-username">loading</span>
+      <a href="/admin.html" id="admin-link" class="admin-chip" style="display:none">🛡️ Admin</a>
+      <button class="btn-logout" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- ══ CATEGORIES VIEW ══ -->
+  <div id="categories-view" class="view">
+    <div id="categories-page">
+      <div class="categories-heading">
+        Pick your <span>vibe</span> 💀
+      </div>
+      <p class="categories-sub">Select a category to see what GenZs are ranting about today.</p>
+      <div class="category-cards" id="category-cards-container">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CHAT LIST VIEW ══ -->
+  <div id="chat-list-view" class="view" style="display:none; flex:1; flex-direction:column;">
+    <div class="chat-list-header">
+      <button class="btn-back" onclick="showCategories()">← Back</button>
+      <div class="chat-list-title" id="chat-list-title">🔥 Rants</div>
+      <button class="btn-new-rant" onclick="openNewRantModal()">
+        <span class="plus">+</span>
+        <span>Start a Rant</span>
+      </button>
+    </div>
+    <div class="chat-list-body">
+      <div id="chat-list-container"></div>
+      <div id="chat-list-pagination" class="pagination"></div>
+    </div>
+  </div>
+
+  <!-- ══ THREAD VIEW ══ -->
+  <div id="thread-view" class="view" style="display:none; flex:1; flex-direction:column;">
+    <div class="thread-header">
+      <button class="btn-back" id="thread-back-btn" onclick="backToChatList()">← Back</button>
+      <div class="thread-title">Thread 🧵</div>
+    </div>
+    <div class="thread-body">
+      <div id="thread-container"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ NEW RANT MODAL ══ -->
+<div class="modal-overlay" id="new-rant-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Start a Rant 🔥</div>
+      <button class="modal-close" onclick="closeNewRantModal()">✕</button>
+    </div>
+
+    <label class="modal-label">Tag it (optional)</label>
+    <div class="label-pills" id="rant-labels">
+      <span class="label-pill" onclick="toggleLabel(this)">😤 I'm so done</span>
+      <span class="label-pill" onclick="toggleLabel(this)">💀 low-key dead inside</span>
+      <span class="label-pill" onclick="toggleLabel(this)">🤡 clown behaviour</span>
+      <span class="label-pill" onclick="toggleLabel(this)">🔥 blazing hot take</span>
+      <span class="label-pill" onclick="toggleLabel(this)">👀 spill the tea</span>
+      <span class="label-pill" onclick="toggleLabel(this)">💯 facts only</span>
+      <span class="label-pill" onclick="toggleLabel(this)">🫡 respectfully though</span>
+      <span class="label-pill" onclick="toggleLabel(this)">🚩 red flag</span>
+    </div>
+
+    <label class="modal-label">Your rant</label>
+    <textarea
+      id="new-rant-text"
+      class="rant-textarea"
+      placeholder="What happened? Don't hold back... (max 1000 chars)"
+      maxlength="1000"
+      oninput="updateRantCharCount()"
+    ></textarea>
+
+    <div class="modal-footer">
+      <span class="modal-char-count" id="rant-char-count">0 / 1000</span>
+      <button class="btn-post-rant" onclick="submitNewRant()">Post Rant 🔥</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST CONTAINER ══ -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
